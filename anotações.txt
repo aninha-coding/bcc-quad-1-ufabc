@@ -1,0 +1,280 @@
+programas em colunas e em linhas
+-colunas: selecionar- restringe colunas e mantem as linhas
+-linhas: filtrar - restringe as linhas mas mantem as colunas
+
+ select(): seleciona subconjuntos de colunas de uma tabela 
+ filter(): seleciona subconjuntos de linhas baseada em um critério.
+  group_by() e summarize() : cria sumários das informações com base em agrupamentos dos dados.
+
+
+1- carregar as bibliotecas necessárias( trabalhar com as bibliotecas abertas)
+2- salvar arquivo na pasta aula 3 
+3- carregar os dados
+4- session- set session directory- escolher a pasta que está o arquivo
+
+tabela <- read_csv("minidados.csv")
+View(tabela)
+
+não pode carregar dados que não existem
+Dica: o comando unique recebe uma sequência de valores e produz como resultado uma versão dessa sequência com as duplicatas removidas. O comando sort recebe uma sequência e produz uma versão ordenada dessa sequência, por exemplo: > multiplos <- c(2, 1, 0, 2, 3, 1, 5, 2, 3, 1, 0) > multiplos
+substituir os comandos do pdf de “dados” para “tabela”
+
+
+names(dados)
+colunas <- names(dados)
+colunas[1:3]
+primeiras 3 colunas
+select(dados,colunas[1:4])
+> d1 <-select(dados,colunas[1:4])
+1 ao 4 - [1:4]
+1 E 4 - 1,4 
+sequência com valores específicos - (concatenar”)
+/→ c(1,4) transforma numa lista 
+> summary(dados)
+tenta resumir cada coluna usando alguns valores 
+pegando o min, máx 
+maior e menor mês por ex 
+por ex> peso: menor peso e maior peso, sumarizando os dados obtidos na tabela que agora chamamos de dados
+(mean)= média aritmética 
+(median)= metade dos valores(média) 
+NA’S- not available- não conseguiram mensurar
+
+pegar colunas separadas 
+por $
+ex_ dados$year
+
+select nao muda o número de linhas, continua igual, mudando apenas número de colunas
+vice versa com o filter
+
+unique- mostra quais são os valores distintos 
+
+> d2 <- filter(dados,year==1999)
+> dim(d2)
+> d3 <- filter( dados,year > 1998)
+> dim(d3)
+= da matematica no programa → == “
+comparacao ==
+
+
+> sort(unique(d3$weight))
+
+> mean(dados$weight, na.rm=TRUE) 
+[1] 40.91898 
+A função mean calcula a média simples de uma sequência de valores. O parâmetro na.rm=TRUE determina que os valores desconhecidos (NA) sejam excluídos do cálculo. Se quisermos calcular as médias de todos os animais machos, poderíamos usar o comando filter para reduzir as linhas e depois aplicar a função mean:
+ > aux <- filter(dados, sex == "M")
+ > mean(aux$weight, na.rm=TRUE)
+ [1] 42.37945
+ Esse processo pode se tornar cansativo se quisermos calcular médias agrupadas para vários valores, por exemplo, se quisermos calcular a média de peso para as diversas espécies. Esse problema pode ser resolvido com o uso das funções group_by e summarize. A função group_by cria uma tabela agregada por algum critério. Por exemplo:
+ > tblaux <- group_by(dados, sex)
+ > names(tblaux)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+aula 3 dia 18/07
+
+dados <- read_csv("minidados.csv")
+d2<- select(dados,species,year,weight)
+d3<- mutate(d2,idade=2024-year)
+head(d3)
+
+passar para kg
+d4 <-mutate(d2,weight_kg=weight/1000)
+
+para tirar a outra tabela (nao preservando nada)
+d4<-mutate(d2,weight_kg=weight/1000,.keep="none")
+keep = c("all", "used", "unused", "none")
+
+dados que nao foram usados na transformação para kg 
+d4<-mutate(d2,weight_kg=weight/1000,.keep="unused")
+
+podemos contar coisas
+count(dados,species, sort=TRUE)
+sort=ordenar do mais frequente pelo menos frequente 
+
+contagem <-count(dados,species,sort=TRUE)
+contagem <-count(dados,taxa,sex,sort=TRUE)
+contagem <-count(dados,taxa,sex,species,sort=TRUE)
+para mostrar: contagem
+
+comando group by : gerar uma outra tabela 
+group_by(dados,sex)
+reordenamento adequado
+group_by(dados,species)
+
+summarize - resumo de sumario
+summarize(group_by(dados,species,sex), mean_weight=mean(weight,na.rm=TRUE))
+mean = funcao que calcula a média 
+
+limpo<-filter(dados, !is.na(weight))
+na- nao numericos
+criar uma tabela intermediaria- dados limpos 
+tirando o na 
+cirar uma expressao quando verdadeira e quando falsa ele retira esta linha---filter 
+is.na-- verdadeiro quando nao na- retirar os na
+
+(substituir dados por limpo)
+summarize(group_by(limpo,species,sex), mean_weight=mean(weight,na.rm=TRUE))
+
+summarize(group_by(dados,species), contagem=n())
+(chamar de N) 
+contagem – contar o numero de ocorrencias divido por especies
+
+
+mudar tabela add a taxa
+summarize(group_by(dados,taxa,species), contagem=n())
+
+
+ordenando os dados com arrange 
+tabelax <- group_by(dados, sex, species)
+
+tb.min.max.weight <- summarize(tabelax, min_weight=min(weight),max_weight=max(weight), mean_length=mean(hindfoot_length)) 
+
+print(tb.min.max.weight, n=15)
+
+Agora podemos produzir uma cópia dessa tabela de dados, ordenada pelo peso do exemplar mais leve
+arr.min.weight <- arrange(tb.min.max.weight, min_weight) 
+print(arr.min.weight, n=15) 
+
+
+Se quisermos ordenar em ordem decrescente, precisamos usar a função desc():
+arr.min.weight.desc <- arrange(tb.min.max.weight, desc(min_weight)) 
+print(arr.min.weight.desc, n=15)
+
+
+ex 1
+tb.meanlenght <-summarize(tabelax, mean_length=mean(hindfoot_length))
+tb.mean.lenght <-arrange(tabelax, desc(mean_length=mean(hindfoot_length)))
+print(tb.mean.lenght)
+
+ex2 
+tb.max.weight <-summarize(tabelax,max_weight=max(weight))
+tb.max.weight <-arrange(tabelax, desc(max_weight=max(weight)))
+print(tb.max.weight)
+
+Aula 5- variabilidade de dados
+utilizamos o hibrid csv como informacoes de dados
+discutir este conceito de variabilidade
+estudar qualquer tipo de objeto (qual a altura dos alunos desta sala ou renda no brasil terá uma variabilidade)
+qual a faixa de valor que esperamos que esteja posicionado)
+variabilidade grande ou pequena
+
+ library(readr)
+ > library(dplyr) 
+> library(ggplot2)
+ > aux <- read_csv("hybrid.csv") 
+> # o fato de conversão mpg -> km/l é 0.425144 
+> aux <- mutate(aux, kmpl = mpg*0.425144) 
+> # sinal de ! indica que queremos eliminar a coluna mpg, 
+> # todas as demais colunas são preservadas 
+> dados <- select(aux, !mpg)
+ > head(dados)
+
+> # para pegar todos os pontos, vamos passar algo vazio para o eixo x
+ > ggplot(data = dados, mapping = aes(x = "", y = kmpl)) + + geom_boxplot() + + labs(x="", y = "Economia (km/l)") 
+
+ideia do gráfico de caixa 
+EXISTEM DADOS ATIPICOS
+
+primeiro valor a se medir → Ver a mediana
+(metade do intervalo do meio) = mediana
+desenho da caixa a partir da mediana
+risco central - mediana 
+topo- terceito quartil
+por baixo - primeiro quartil
+sabemos mais ou menos onde estaria a mediana do grafico
+assimetria- dados se extendem mais de um lado do que para outro;
+—--------/—---
+         /
+         /
+como exemplo da assimetria
+faixa interquartil (entre o primeiro e o quarto) 
+pegar esse comprimento x 1,5 e trazer para os lados. com o riscos, o ponto mais extremo que está na faixa interquartil
+
+as vezes temos dados que são extremos 
+
+o conceito de resíduo.
+Quanto temos uma série de medidas numéricas (x1, x2, . . . , xn) de uma grandeza numérica, a média x da série é denida como: 
+x = 1 n Xn i=1 xi (1) 
+isto é, a média corresponde à somatória de todos os valores, dividida pela quantidade de valores da série. Para um valor xi da série, o resíduo ri é denido como a diferença entre o valor xi e a média da série: Para exemplicar, vamos calcular e visualizar os resíduos dos valores de consumo: > consumo.medio <- mean(dados$kmpl) > consumo.residuos <- dados$kmpl - consumo.medio
+
+residuo é o calculo de uma media 
+
+
+AUla 6 - variabilidade de dados 
+abrir os arquivos na pasta da aula 5
+ -variância 
+- “normal” → distribuição normal: valor médio com concentração grande ao redor da média → sigma letra grega
+parâmetro que caracteriza uma série de distribuições
+
+como calcular a variância- centro de massa - lembrar da gangorra
+soma todos os valores e divide pela quantidade de dados
+o quanto os dados se afastam desse centro de massa
+
+resíduo. Para cada ponto podemos calcular a distância entre o ponto e a média 
+pontos como X 1,2,3 e 4 
+x barra- valor médio
+calcular resíduo para cada ponto
+r2= x2- o valor médio
+resíduos podem ser negativos e positivos por conta das distâncias
+resíduos médios total = 0 
+
+r2 ^2 = (x2- valor médio)^2 
+somar os resíduos e tirar a média 
+dando a variância = média das distâncias entre o ponto ao quadrado
+variância símbolo- foto
+simbolo somatoria - sigma maiusculo
+
+
+No R, usamos a função cor para calcular o coeciente de correlação
+
+O coeciente de correlação tem as seguintes propriedades:  O valor r é um número puro, ele não tem unidade.  −1 ≤ r ≤ 1  Se aplicarmos uma mudança de escala nas séries numéricas, o valor de r não é alterado. Por exemplo, o coeciente de correlação economia de combustível x preço tem o mesmo valor se a economia for medida em km/l ou milhas por galão.  Se invertemos a posição dos eixos, o valor de r se mantém o mesmo. Isto é, r(x, y) = r(y, x).  O valor de r mede a semelhança entre o gráco de dispersão e uma linha reta. Caso r = 1, o gráco de dispersão estará perfeitamente alinhado sobre uma linha reta crescente. Caso r = −1, o gráco de dispersão estará perfeitamente alinhado sobre uma linha reta decrescente.  O valor absoluto de r mede o quanto a relação entre as duas grandeza é linear (semelhante a uma reta). Quanto mais próximo de 1 estiver o valor absoluto de r, mais linear será a relação entre as duas grandezas medidas.  Um valor positivo de r indica uma associação positiva entre as duas grandezas (quando x aumenta, a tendência é que y aumente também). Um valor negativo de r indica uma associação negativa entre as duas grandezas (quando x aumenta, a tendência é que y diminua). Quando coeciente de correlação entre economia de combustível e preço para a categoria SUV, obtemos um valor aproximado de −0.67. Isso indica uma associação negativa entre as duas grandezas (quando o preço aumenta, a economia de combustível tende a diminuir), o grau de linearidade da associação é moderado (nem muito próximo de 1, nem próximo de zero).
+
+exercicio 1 
+> r_preco_aceleracao <- cor(dados.suv$kmpl, dados.suv$acceleration)
+> r_preco_aceleracao
+[1] -0.2839041
+para montar o grafico
+> dados.suvac <-filter(dados, class==”SUV”)
+> A <- ggplot(data=dados.suv, mapping=aes(x = kmpl, y = acceleration))
+> A <- A +geom_point()
+> A <- A + labs (x = "Preço [US$}", y = "acceleration [m/s]", title = "Preço em função de aceleração, categoria SUV")
+exercicio 2 
+> g <- ggplot(data=dados.suv, mapping=aes(x = kmpl, y = msrp))
+> g <- g + geom_point()
+> g <- g + geom_abline(slope=-6603, intercept = 116311)
+> 
+> g <- g + labs (x = "Economia", y = "Preço", title = "Preço em função de economia, categoria SUV")
+> 
+> g
+> modelo <- lm(acceleration ~ kmpl, data=dados.suv)
+> modelo
+
+Call:
+lm(formula = acceleration ~ kmpl, data = dados.suv)
+
+Coefficients:
+(Intercept)         kmpl  
+    16.5626      -0.3501 
+
+
+> A <- ggplot(data=dados.suv, mapping=aes(x = acceleration, y = kmpl))
+> A <- A + geom_point()
+> A <- A + geom_abline(slope=-0.3501, intercept = 16.5626)
+> A <- A + labs (x = "Aceleracao", y = "Preço", title = "Preço em função de aceleracao, categoria SUV")
+> A
+simulação I
+
+realizar uma captura de uma população em momentos especificos 
+exercicios de aula 
